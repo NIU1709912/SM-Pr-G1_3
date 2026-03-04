@@ -32,7 +32,7 @@ if __name__ == '__main__':
 	     './frames/original%d.png', 
 	 ]
 
-        utility.execute_command(command)        
+	utility.execute_command(command)        
 
 	# Comanda per a extreure els quadres del video codificat
 	command = [

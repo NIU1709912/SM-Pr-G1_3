@@ -183,7 +183,7 @@ def get_images():
 
 def check_image_availability(images):
     if len(images) <= 1:
-        print "Error: Use 1 reference image and at least 1 query image."
+        print ("Error: Use 1 reference image and at least 1 query image.")
         get_usage()
         exit()
 
@@ -214,7 +214,7 @@ def create_ASCII_table():
         cols = count_cols()
         maxlen = __get_max_length()
         line = "|%-" + str(maxlen) + "s"
-        for c in xrange(cols):
+        for c in range(cols):
             line += "|%11s".format('centered')
         line += "|\n"
         return line
@@ -252,7 +252,7 @@ def create_LATEX_table():
     def __create_line_format():
         cols = count_cols()
         line = "%-13s &"
-        for c in xrange(cols - 1):
+        for c in range(cols - 1):
             line += "%11s &"
         line += "%11s "
         line += "\\\ \n"
@@ -268,7 +268,7 @@ def create_LATEX_table():
 
     def __create_header():
         cols = count_cols()
-        fmt_cols = "".join(['|l' for i in xrange(cols)]) + "|"
+        fmt_cols = "".join(['|l' for i in range(cols)]) + "|"
         header = "\\begin{table}\n"
         header += "  \\begin{tabular}{" + fmt_cols + "}\n"
         header += "    \\hline\n"
@@ -302,7 +302,7 @@ def create_HTML_table():
     def __create_line_format():
         cols = count_cols()
         line = "  <tr>\n    <td>%s</td>"
-        for c in xrange(cols):
+        for c in range(cols):
             line += "\n    <td>%s</td>"
         line += "\n  </tr>\n"
         return line
@@ -377,20 +377,20 @@ def count_cols():
 
 def check_help():
     if __cl.isSelectedHelp:
-        print get_help()
+        print (get_help())
         exit(0)
 
 
 def check_usage():
     if len(argv) < 2:
-        print get_usage()
+        print (get_usage())
         exit(0)
 
 
 def __main():
     check_help()
     check_usage()
-    print select_output_type()
+    print (select_output_type())
 
 
 __cl = CommandLineOpt()
