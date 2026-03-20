@@ -9,7 +9,7 @@ def comprimir_y_analizar_h261(video_input_file, q_scale, ffmpeg_path='./ffmpeg.e
 
     # Comprimeix un vídeo a H.261, extreu els frames i calcula mètriques de qualitat.
     # Configuració de rutes
-    video_output_file = f'./Practica-2/video_comprimido.avi'
+    video_output_file = f'./Practica-2/video_comprimido_h621.avi'
     frames_dir = f'./Practica-2/frames'
     
     if not os.path.exists(frames_dir):
@@ -44,7 +44,7 @@ def comprimir_y_analizar_h261(video_input_file, q_scale, ffmpeg_path='./ffmpeg.e
 
     # métriquess
     frame_idx = 1
-    total_ssim, total_mse, total_snr = 0, 0, 0
+    # total_ssim, total_mse, total_snr = 0, 0, 0
     
     while True:
         source = cv2.imread(f'{frames_dir}/original{frame_idx}.png')
@@ -53,9 +53,9 @@ def comprimir_y_analizar_h261(video_input_file, q_scale, ffmpeg_path='./ffmpeg.e
         if source is None or target is None:
             break
 
-        total_ssim += metrikz.ssim(source, target)
-        total_mse += metrikz.mse(source, target)
-        total_snr += metrikz.snr(source, target)
+        # total_ssim += metrikz.ssim(source, target)
+        # total_mse += metrikz.mse(source, target)
+        # total_snr += metrikz.snr(source, target)
         frame_idx += 1
 
     num_frames = frame_idx - 1
@@ -65,12 +65,18 @@ def comprimir_y_analizar_h261(video_input_file, q_scale, ffmpeg_path='./ffmpeg.e
         print("-" * 30)
         print(f"RESULTATS FINALS Q={q_scale}")
         print(f"Frames: {num_frames}")
-        print(f"MSE Mitjà:  {total_mse / num_frames:.4f}")
-        print(f"SNR Mitjà:  {total_snr / num_frames:.4f} dB")
-        print(f"SSIM Mitjà: {total_ssim / num_frames:.4f}")
+        # print(f"MSE Mitjà:  {total_mse / num_frames:.4f}")
+        # print(f"SNR Mitjà:  {total_snr / num_frames:.4f} dB")
+        # print(f"SSIM Mitjà: {total_ssim / num_frames:.4f}")
         print("-" * 30)
-    else:
-        print(f"Error en processar el vídeo amb Q={q_scale}")
+
+         # -- Resultatss
+        if os.path.exists(video_output_file):
+            return os.path.getsize(video_output_file)
+        else:
+            print(f"Error: No s'ha creat el fitxer per a Q={q_scale}")
+            return None
+
 
 #----- MPEG-2 -----#
 
@@ -118,9 +124,9 @@ def comprimir_y_analizar_mpeg2(video_input_file, q_scale, ffmpeg_path='./ffmpeg.
         if source is None or target is None:
             break
 
-        total_ssim += metrikz.ssim(source, target)
-        total_mse += metrikz.mse(source, target)
-        total_snr += metrikz.snr(source, target)
+        # total_ssim += metrikz.ssim(source, target)
+        # total_mse += metrikz.mse(source, target)
+        # total_snr += metrikz.snr(source, target)
         frame_idx += 1
 
     num_frames = frame_idx - 1
@@ -130,105 +136,31 @@ def comprimir_y_analizar_mpeg2(video_input_file, q_scale, ffmpeg_path='./ffmpeg.
         print("-" * 30)
         print(f"RESULTATS MPEG-2 Q={q_scale}")
         print(f"Frames analitzats: {num_frames}")
-        print(f"MSE Mitjà:  {total_mse / num_frames:.4f}")
-        print(f"SNR Mitjà:  {total_snr / num_frames:.4f} dB")
-        print(f"SSIM Mitjà: {total_ssim / num_frames:.4f}")
+        # print(f"MSE Mitjà:  {total_mse / num_frames:.4f}")
+        # print(f"SNR Mitjà:  {total_snr / num_frames:.4f} dB")
+        # print(f"SSIM Mitjà: {total_ssim / num_frames:.4f}")
         print("-" * 30)
-    else:
-        print(f"Error en analitzar els frames de MPEG-2.")
+        if os.path.exists(video_output_file):
+            return os.path.getsize(video_output_file)
+        else:
+            print(f"Error: No s'ha creat el fitxer per a Q={q_scale}")
+            return None
 
 if __name__ == '__main__':
     # Defineix paths
     print(f"Directori de treball actual: {os.getcwd()}")
     mi_ffmpeg = './Practica-2/ffmpeg.exe'
-    mi_video = './Practica-2/videos/ducks_take_off_420_720p50.y4m'
-    
-    q = 2 # 2, 10, 20 31
-    
-    #comprimir_y_analizar_h261(mi_video, q, mi_ffmpeg)
+    mi_video = './Practica-2/videos/hall_monitor_cif.y4m'
+    q_values = [2, 10, 20, 31] # 2, 10, 20 31
+    mida_orig = os.path.getsize(mi_video)
 
-    comprimir_y_analizar_mpeg2(mi_video, q, mi_ffmpeg)
-
-
-    #codigo de marco:
-    
-# if __name__ == '__main__':
-    
-#     ruta_actual = os.getcwd()
-#     print(f"Estic treballant a: {ruta_actual}")
-
-# 	#Configurem arxius d'entrada i sortida
-#     video_input_file = './Practica-2/videos/flower_garden_422_ntsc.y4m' # Posem aqui el nom del vídeo que volem comprimir
-#     q_scale = '31'                                       # Probar amb diferents valors de Q-scale (2,10,20,31)
-#     video_output_file = f'./video_comprimido_q{q_scale}.avi'
-
-#     # Creem carpeta per guardar els frames si no existeix
-#     if not os.path.exists('./frames'):
-#         os.makedirs('./frames')
-
-#     # COMPRIMIM EL VÍDEO
-#     print(f"Comprimim vídeo a H.261 amb Q-scale {q_scale}...")
-#     command = [
-#         './Practica-2/ffmpeg.exe', '-y', '-an', 
-#         '-i', video_input_file, 
-#         '-s', 'cif',             
-#         '-q:v', q_scale, 
-#         '-vcodec', 'h261', 
-#         video_output_file,
-#     ]
-#     utility.execute_command(command)
-
-#     # EXTRACCIÓ DE FRAMES
-#     print("Extrayent frames del vídeo ORIGINAL...")
-#     command = [
-#          './Practica-2/ffmpeg.exe', '-y', 
-#          '-i', video_input_file,
-#          '-s', 'cif',            
-#          './frames/original%d.png', 
-#      ]
-#     utility.execute_command(command)        
-
-#     print("Extrayent frames del vídeo CODIFICAT...")
-#     command = [
-#          './Practica-2/ffmpeg.exe', '-y', 
-#          '-i', video_output_file,
-#          './frames/encoded%d.png', 
-#      ]
-#     utility.execute_command(command)
-    
-#     # CALCUL DE LES METRIQUES
-#     print("Calculant les mètriques de qualitat per cada frame...")
-    
-#     frame_idx = 1
-#     total_ssim, total_mse, total_snr = 0, 0, 0
-    
-#     # llEGIM ELS FRAMES FINS QUE NO QUEDIN MÉS
-#     while True:
-#         source = cv2.imread(f'./frames/original{frame_idx}.png')
-#         target = cv2.imread(f'./frames/encoded{frame_idx}.png')
-
-#         # Si no hi ha més frames, sortim del bucle
-#         if source is None or target is None:
-#             break
-
-#         # Sumem a les metriques totals
-#         total_ssim += metrikz.ssim(source, target) # Calcula la similitud estructural entre les dues imatges. El valor oscil·la entre -1 i 1, on 1 indica que les imatges són idèntiques. Com més proper a 1, millor qualitat té la imatge codificada.
-#         total_mse += metrikz.mse(source, target) # Resta valor pixel original - pixel codificat, eleva al quadrat, i fa la mitjana de tots els pixels. Quant més alt sigui el MSE, pitjor qualitat té la imatge codificada.
-#         total_snr += metrikz.snr(source, target) # Calcula la relació entre el senyal original i el soroll introduït per la codificació. Es mesura en decibels (dB). Com més alt sigui el SNR, millor qualitat té la imatge codificada.
-        
-#         frame_idx += 1
-
-#     num_frames = frame_idx - 1
-
-#     # Resultats finals
-#     if num_frames > 0:
-#         print("\n" + "="*40)
-#         print(f"RESULTATS PER Q-SCALE {q_scale}")
-#         print("="*40)
-#         print(f"Total de frames analitzats: {num_frames}")
-#         print(f"MSE Mitjà:  {total_mse / num_frames:.4f}")
-#         print(f"SNR Mitjà:  {total_snr / num_frames:.4f} dB")
-#         print(f"SSIM Mitjà: {total_ssim / num_frames:.4f}")
-#         print("="*40)
-#     else:
-#         print("Error: No s'han pogut analitzar els frames. Comprova que els vídeos s'han processat correctament.")
+    for i in q_values:
+           # mida_com = comprimir_y_analizar_h261(mi_video, i, mi_ffmpeg)
+            mida_com = comprimir_y_analizar_mpeg2(mi_video, i, mi_ffmpeg)
+            if mida_com:
+            # Conversió a MB
+                mida_mb = mida_com / (1024 * 1024)
+                ratio = mida_orig / mida_com
+                
+                print(f"Q-Scale: {i} | Mida: {mida_mb:.2f} MB | Ratio: {ratio:.2f}:1\n")
+            else: print("Error")
