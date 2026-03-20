@@ -206,3 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 /Codi_Imatges/output
+/Practica-2/frames
+/Practica-2/Videos
+*.avi
