@@ -6,6 +6,7 @@ __pycache__/
 #ignoraremos videos i frames
 Practica-2/videos/*.y4m
 Practica-2/frames/*.png
+Practica-2/*.avi
 
 # C extensions
 *.so
