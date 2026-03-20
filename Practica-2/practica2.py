@@ -2,7 +2,7 @@ import os
 import cv2
 import metrikz
 import utility
-
+import matplotlib.pyplot as plt
 
 #----- H261 -----#
 def comprimir_y_analizar_h261(video_input_file, q_scale, ffmpeg_path='./ffmpeg.exe'):
@@ -116,6 +116,9 @@ def comprimir_y_analizar_mpeg2(video_input_file, q_scale, ffmpeg_path='./ffmpeg.
     # Càlcul de mètriques
     frame_idx = 1
     total_ssim, total_mse, total_snr = 0, 0, 0
+    mse_history = []
+    ssim_history = []
+    snr_history = []
     
     while True:
         source = cv2.imread(f'{frames_dir}/original{frame_idx}.png')
@@ -124,9 +127,13 @@ def comprimir_y_analizar_mpeg2(video_input_file, q_scale, ffmpeg_path='./ffmpeg.
         if source is None or target is None:
             break
 
-        # total_ssim += metrikz.ssim(source, target)
-        # total_mse += metrikz.mse(source, target)
-        # total_snr += metrikz.snr(source, target)
+        total_ssim += metrikz.ssim(source, target)
+        total_mse += metrikz.mse(source, target)
+        total_snr += metrikz.snr(source, target)
+
+        mse_history.append(metrikz.mse(source, target))
+        ssim_history.append(metrikz.ssim(source, target))
+        snr_history.append(metrikz.snr(source, target))
         frame_idx += 1
 
     num_frames = frame_idx - 1
@@ -136,31 +143,78 @@ def comprimir_y_analizar_mpeg2(video_input_file, q_scale, ffmpeg_path='./ffmpeg.
         print("-" * 30)
         print(f"RESULTATS MPEG-2 Q={q_scale}")
         print(f"Frames analitzats: {num_frames}")
-        # print(f"MSE Mitjà:  {total_mse / num_frames:.4f}")
-        # print(f"SNR Mitjà:  {total_snr / num_frames:.4f} dB")
-        # print(f"SSIM Mitjà: {total_ssim / num_frames:.4f}")
+        print(f"MSE Mitjà:  {total_mse / num_frames:.4f}")
+        print(f"SNR Mitjà:  {total_snr / num_frames:.4f} dB")
+        print(f"SSIM Mitjà: {total_ssim / num_frames:.4f}")
         print("-" * 30)
         if os.path.exists(video_output_file):
-            return os.path.getsize(video_output_file)
+            return os.path.getsize(video_output_file), mse_history, ssim_history, snr_history
         else:
             print(f"Error: No s'ha creat el fitxer per a Q={q_scale}")
             return None
+        
+        
+def generate_plots(all_results):
+    """
+    all_results: A dictionary where keys are video names and values are 
+    dictionaries containing the lists of MSE, SSIM, and SNR.
+    """
+    metrics = ['MSE', 'SSIM', 'SNR']
+    
+    for metric in metrics:
+        plt.figure(figsize=(10, 6))
+        for video_name, data in all_results.items():
+            plt.plot(data[metric.lower()], label=video_name)
+        
+        plt.title(f'Figura: {metric} vs #quadre')
+        plt.xlabel('Número de Quadre (#)')
+        plt.ylabel(metric)
+        plt.legend()
+        plt.grid(True)
+        # plt.savefig(f'./Practica-2/figura_{metric.lower()}.png') # Optional: save to disk
+        plt.show()
 
 if __name__ == '__main__':
     # Defineix paths
     print(f"Directori de treball actual: {os.getcwd()}")
-    mi_ffmpeg = './Practica-2/ffmpeg.exe'
-    mi_video = './Practica-2/videos/hall_monitor_cif.y4m'
-    q_values = [2, 10, 20, 31] # 2, 10, 20 31
-    mida_orig = os.path.getsize(mi_video)
 
-    for i in q_values:
-           # mida_com = comprimir_y_analizar_h261(mi_video, i, mi_ffmpeg)
-            mida_com = comprimir_y_analizar_mpeg2(mi_video, i, mi_ffmpeg)
-            if mida_com:
-            # Conversió a MB
-                mida_mb = mida_com / (1024 * 1024)
-                ratio = mida_orig / mida_com
-                
-                print(f"Q-Scale: {i} | Mida: {mida_mb:.2f} MB | Ratio: {ratio:.2f}:1\n")
-            else: print("Error")
+    videos_dataset = [
+        './Practica-2/videos/hall_monitor_cif.y4m',
+        './Practica-2/videos/ducks_take_off_420_720p50.y4m',
+        './Practica-2/videos/flower_garden_422_ntsc.y4m',
+        './Practica-2/videos/galleon_422_ntsc.y4m',
+        './Practica-2/videos/pamphlet_cif.y4m'
+    ]
+
+    results_for_plotting = {}
+    chosen_q = 8
+
+    mi_ffmpeg = './Practica-2/ffmpeg.exe'
+    # mi_video = './Practica-2/videos/hall_monitor_cif.y4m'
+    #q_values = [2, 10, 20, 31] # 2, 10, 20 31
+    q_values = [10]
+
+    for mi_video in videos_dataset:
+        mida_orig = os.path.getsize(mi_video)
+        for q in q_values:
+            # mida_com = comprimir_y_analizar_h261(mi_video, i, mi_ffmpeg)
+                mida_com, mse_l, ssim_l, snr_l = comprimir_y_analizar_mpeg2(mi_video, q, mi_ffmpeg)
+
+
+
+                if mida_com:
+                # Conversió a MB
+                    mida_mb = mida_com / (1024 * 1024)
+                    ratio = mida_orig / mida_com
+
+                    results_for_plotting[mi_video] = {
+                    'mse': mse_l,
+                    'ssim': ssim_l,
+                    'snr': snr_l
+                }
+                    
+                    print(f"Q-Scale: {q} | Mida: {mida_mb:.2f} MB | Ratio: {ratio:.2f}:1\n")
+                else: print("Error")
+
+    # Generate the 3 Figures required in section 3.1
+    generate_plots(results_for_plotting)
