@@ -3,6 +3,9 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+#ignoraremos videos
+Practica-2/videos/*.y4m
+
 # C extensions
 *.so
 
