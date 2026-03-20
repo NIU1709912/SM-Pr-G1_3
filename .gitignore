@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # No pujar els videos
-*videos/.y4m
+*Practica-2/videos/.y4m
 
 # C extensions
 *.so
