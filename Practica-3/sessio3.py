@@ -141,7 +141,7 @@ if __name__ == '__main__':
     # GENERAR AQUI EL CODI PER FER EL MOTION VECTORS
     # ######################
     print("Executant Versió 2 (Cerca restringida a 24 píxels)...")
-    # Usa search_window=None para ejecutar la V1 (aviso: ¡la V1 tardará mucho!)
+    # search_window=None para V1
     actual_position, motion_vector, errors_prediction = block_matching(frame1, frame2, block_size=8, search_window=24)
 
 
