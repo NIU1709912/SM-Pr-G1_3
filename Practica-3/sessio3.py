@@ -40,9 +40,10 @@ def iquantit(block):
 
 def block_matching(frame1, frame2, block_size=8, search_window=None):
     h, w = frame1.shape
-    actual_pos = []
+    actual_pos_vec = []
     motion_vec = []
-    errors_predict = []
+    errors_predict_vec = []
+    total_mse = 0
 
     start_time = time.time()
 
@@ -82,26 +83,30 @@ def block_matching(frame1, frame2, block_size=8, search_window=None):
                         best_pos = (u, v)
                         best_error_block = block2 - block1
 
+
+            # Error acumulado
+            total_mse += min_mse
+
             # Guardamos las coordenadas (X, Y) para dibujar con OpenCV
-            actual_pos.append((j, i))
+            actual_pos_vec.append((j, i))
             motion_vec.append((best_pos[1], best_pos[0]))
 
             # Transformar, cuantizar y aplicar zigzag al error
             dct_block = dct2(best_error_block)
             quantit_block = quantit(dct_block)
             zz_error = eines_sessio3.zigzag(quantit_block)
-            errors_predict.append(zz_error)
+            errors_predict_vec.append(zz_error)
 
     exec_time = time.time() - start_time
-    print(f"Block Matching completat en {exec_time:.2f} segons.")
+    # print(f"Block Matching completat en {exec_time:.2f} segons.")
+    global_mse = total_mse / (len(actual_pos_vec))
     
-    return actual_pos, motion_vec, errors_predict
+    return actual_pos_vec, motion_vec, errors_predict_vec, global_mse, exec_time
 
 
 
 
 if __name__ == '__main__':
-
     #frame anterior
     img1 = cv2.imread("frame0_1.png")
 
@@ -123,9 +128,9 @@ if __name__ == '__main__':
 
 
     #vectors finals
-    actual_pos=[]
+    actual_pos_vec=[]
     motion_vec=[]
-    errors_predict=[]
+    errors_predict_vec=[]
 
     # matriu per generar els blocs 
     bk=np.zeros((8, 8))
@@ -135,7 +140,7 @@ if __name__ == '__main__':
     # ######################
     print("Executant Versio 2 (Cerca restringida a 24 pixels)...")
     # search_window=None para V1
-    actual_pos, motion_vec, errors_predict = block_matching(frame1, frame2, block_size=8, search_window=24)
+    actual_pos_vec, motion_vec, errors_predict_vec = block_matching(frame1, frame2, block_size=8, search_window=24)
 
 
     # GENERAR PER ULTIM EL CODI DE VISUALITZACIO 
@@ -147,7 +152,7 @@ if __name__ == '__main__':
 
     # Bucle per dibuixar nomes els vectors que tenen moviment
     moviments_detectats = 0
-    for pos_actual, pos_moviment in zip(actual_pos, motion_vec):
+    for pos_actual, pos_moviment in zip(actual_pos_vec, motion_vec):
         if pos_actual != pos_moviment:
             cv2.line(img_gris_color, pos_actual, pos_moviment, (0, 0, 255), 1)
             moviments_detectats += 1
@@ -158,3 +163,29 @@ if __name__ == '__main__':
     cv2.imshow('Imatge amb moviments marcats', img_gris_color)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+    # Ejercicio 3
+    image_pairs = [("frame0_1.png", "frame0_2.png"), ("frame1_1.png", "frame1_2.png"), ("frame2_1.png", "frame2_2.png")]
+
+    # Capcalera de la taula
+    print(f"{'Imatges':<25} | {'Versió':<10} | {'Temps (s)':<10} | {'Global MSE':<12}")
+    print("-" * 65)
+
+    for p1_path, p2_path in image_pairs:
+        img1 = cv2.imread("Practica-3/" + p1_path)
+        img2 = cv2.imread("Practica-3/" + p2_path)
+        
+        if img1 is None or img2 is None: continue
+
+        # # convertim a gris per simplicitat
+        frame1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        frame2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+        # Versio 1 (Exhaustiva)
+        actual_pos_vec, motion_vec, errors_predict_vec, mse_v1, time_v1 = block_matching(frame1, frame2, search_window=None)
+        print(f"{p1_path + '/' + p2_path:<25} | {'V1':<10} | {time_v1:<10.2f} | {mse_v1:<12.4f}")
+
+        # Versio 2 (Restringida)
+        actual_pos_vec, motion_vec, errors_predict_vec, mse_v2, time_v2 = block_matching(frame1, frame2, search_window=24)
+        print(f"{p1_path + '/' + p2_path:<25} | {'V2':<10} | {time_v2:<10.2f} | {mse_v2:<12.4f}")
