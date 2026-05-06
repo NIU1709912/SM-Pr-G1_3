@@ -104,6 +104,18 @@ def block_matching(frame1, frame2, block_size=8, search_window=None):
     return actual_pos_vec, motion_vec, errors_predict_vec, global_mse, exec_time
 
 
+def dibuixa_vectors(imatge_fons, positions, motions):
+    # Convertim a color per veure el vermell
+    moviments_detectats = 0
+    img_out = cv2.cvtColor(imatge_fons, cv2.COLOR_GRAY2BGR)
+    for p_act, p_mov in zip(positions, motions):
+        if p_act != p_mov:
+            # Dibuixem línia vermella (BGR: 0, 0, 255)
+            cv2.line(img_out, p_act, p_mov, (0, 0, 255), 1)
+            moviments_detectats += 1
+            
+    print(f"S'han detectat {moviments_detectats} blocs amb moviment.")
+    return img_out
 
 
 if __name__ == '__main__':
@@ -120,48 +132,54 @@ if __name__ == '__main__':
     print(frame1.shape)
     dim=frame1.shape
 
-    #mostra els dos frames per separat en mida real, es pot canviar per matplotlib per veure mes gran.
-    cv2.imshow('frame 1',frame1)
-    cv2.imshow('frame 2', frame2)
+    bk=np.zeros((8, 8)) # matriu per generar els blocs 
 
+    # MOSTRAR IMATGES ORIGINALS
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    plt.imshow(frame1, cmap='gray')
+    plt.title('Frame 1 (Anterior)')
+    plt.axis('off')
 
-    #vectors finals
-    actual_pos_vec=[]
-    motion_vec=[]
-    errors_predict_vec=[]
+    plt.subplot(1, 2, 2)
+    plt.imshow(frame2, cmap='gray')
+    plt.title('Frame 2 (Actual)')
+    plt.axis('off')
+    
+    plt.suptitle("Imatges Originals")
+    plt.show(block=False) # No bloqueja l'execució del codi següent
+    plt.pause(2)
 
-    # matriu per generar els blocs 
-    bk=np.zeros((8, 8))
-
-
-    # GENERAR AQUI EL CODI PER FER EL MOTION VECTORS
+ # GENERAR AQUI EL CODI PER FER EL MOTION VECTORS
     # ######################
-    print("Executant Versio 2 (Cerca restringida a 24 pixels)...")
-    # search_window=None para V1
-    actual_pos_vec, motion_vec, errors_predict_vec, _, _ = block_matching(frame1, frame2, block_size=8, search_window=24)
+    print("Executant Versió 1 (Exhaustiva")
+    pos1, mov1, errors1,_ ,_ = block_matching(frame1, frame2, block_size=8, search_window=None)
+    
+    print("Executant Versió 2 (Cerca restringida a 24 píxels)")
+    pos2, mov2, errors2,_ ,_ = block_matching(frame1, frame2, block_size=8, search_window=24)
 
 
     # GENERAR PER ULTIM EL CODI DE VISUALITZACIO 
     # ######################
-    
-    #### Fent servir CV2 #########
-    # Crear una copia en color per dibuixar la línia
-    img_gris_color = cv2.cvtColor(frame1, cv2.COLOR_GRAY2BGR)
+    vis_v1 = dibuixa_vectors(frame1, pos1, mov1)
+    vis_v2 = dibuixa_vectors(frame1, pos2, mov2)
 
-    # Bucle per dibuixar nomes els vectors que tenen moviment
-    moviments_detectats = 0
-    for pos_actual, pos_moviment in zip(actual_pos_vec, motion_vec):
-        if pos_actual != pos_moviment:
-            cv2.line(img_gris_color, pos_actual, pos_moviment, (0, 0, 255), 1)
-            moviments_detectats += 1
-            
-    print(f"S'han detectat {moviments_detectats} blocs amb moviment.")
+    plt.figure(figsize=(15, 7))
 
-    # Mostra la imatge amb cv2.imshow amb les linies vermelles
-    cv2.imshow('Imatge amb moviments marcats', img_gris_color)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # Subplot per a la V1
+    plt.subplot(1, 2, 1)
+    plt.imshow(cv2.cvtColor(vis_v1, cv2.COLOR_BGR2RGB))
+    plt.title('V1: Cerca Exhaustiva')
+    plt.axis('off')
 
+    # Subplot per a la V2
+    plt.subplot(1, 2, 2)
+    plt.imshow(cv2.cvtColor(vis_v2, cv2.COLOR_BGR2RGB))
+    plt.title('V2: Cerca Restringida (24px)')
+    plt.axis('off')
+
+    plt.tight_layout()
+    plt.show()
 
     # Ejercicio 3
     image_pairs = [("frame0_1.png", "frame0_2.png"), ("frame1_1.png", "frame1_2.png"), ("frame2_1.png", "frame2_2.png")]
@@ -187,3 +205,4 @@ if __name__ == '__main__':
         # Versio 2 (Restringida)
         actual_pos_vec, motion_vec, errors_predict_vec, mse_v2, time_v2 = block_matching(frame1, frame2, search_window=24)
         print(f"{p1_path + '/' + p2_path:<25} | {'V2':<10} | {time_v2:<10.2f} | {mse_v2:<12.4f}")
+
